@@ -1,0 +1,6 @@
+// Make image fill div without changing aspect ratio
+@mixin fitImageToDiv {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}

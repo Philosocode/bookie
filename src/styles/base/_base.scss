@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%; // 1rem = 10px, 10/16 = 62.5%
+  -moz-osx-font-smoothing: grayscale; 
+  -webkit-font-smoothing: antialiased; 
+}
+
+body {
+  color: $color-grey-dark-3;
+  line-height: 1.6;
+
+  // Styles for Image Modal
+  font-size: 1.6rem;
+  font-family: $font-secondary;
+}
+
+.site-content {
+  background: $color-grey-light-1;
+  z-index: -1;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  padding-left: 0;
+}
+
+::selection {
+  background-color: $color-green;
+  color: $color-white;
+}
+
+.active-route {
+  color: $color-grey-dark-5;
+  font-weight: 700;
+}

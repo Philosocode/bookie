@@ -1,0 +1,28 @@
+/* === COLOURS === */
+$color-green: #00B27D;
+$color-black: #000;
+$color-white: #FFF;
+
+$color-grey-light-1: #f7f7f7;
+$color-grey-light-2: #eee;
+$color-grey-light-3: #ccc;
+$color-grey-light-4: #B3B3B3;
+
+$color-grey-dark-1: #999;
+$color-grey-dark-2: #777;
+$color-grey-dark-3: #333;
+$color-grey-dark-4: #262626;
+$color-grey-dark-5: #1a1a1a;
+
+/* === FONT === */
+$font-primary: "Nunito Sans", Helvetica, sans-serif;
+$font-secondary: Roboto, Helvetica, sans-serif;
+
+/* === SHADOWS === */
+$box-shadow-light: 0 .25rem .75rem rgba($color-black, .2);
+$box-shadow-default: 0 1rem 2rem rgba($color-black, .2);
+$box-shadow-pressed: 0 .5rem 1rem rgba($color-black, .2);
+
+$-spacing-small: 1rem;
+$section-spacing-medium: 3rem;
+$section-spacing-large: 6rem;
