@@ -3,7 +3,7 @@
     <h2>{{ title }}</h2>
     <p>By: {{ by }}</p>
     <p>Published By: {{ publisher }}</p>
-    <img :src="imageUrl" :alt="title">
+    <img class="book__image" :src="imageUrl" :alt="title">
     <a class="book__link" :href="bookUrl" target="_blank" rel="noopener">
       <button>See This Book</button>
     </a>
@@ -20,8 +20,17 @@ export default {
 <style lang="scss" scoped>
 .book {
   background: $color-grey-light-2;
-  margin: 0 auto;
+  display: inline-block;
+  margin: 2rem 3rem;
+  padding: .25rem 0 3rem 0;
   width: 25rem;
+
+  &__image {
+    height: 17.5rem;
+    max-height: 17.5rem;
+    width: 12.8rem;
+    max-width: 12.8rem;
+  }
 
   &__link {
     display: block;
