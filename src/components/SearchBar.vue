@@ -43,6 +43,8 @@ export default {
   &__input {
     border-top-left-radius: 3px;
     border-bottom-left-radius: 3px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
     border: 1px solid transparent;
     height: 100%;
     padding: 0 1rem;
@@ -63,6 +65,7 @@ export default {
 
   &__btn {
     height: 100%;
+    width: 8rem;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }

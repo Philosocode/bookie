@@ -162,7 +162,7 @@ export default {
   }
 
   &__btn {
-    width: 12rem;
+    width: 14rem;
   }
 }
 </style>
