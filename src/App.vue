@@ -1,128 +1,114 @@
 <template>
   <div class="container">
-    <h1>Bookie</h1>
-    <form v-on:submit.prevent="onSubmit">
-      <div class="input-container">
-        <input type="text" v-model="searchTerm">
-        <span v-if="searchTerm.length > 0" @click="searchTerm = ''" class="clear">X</span>
-      </div>
-      <button>Search</button>
-    </form>
+    <h1 class="main-heading">Bookie</h1>
+    <SearchBar @search="onSearch($event)" @error="errorMessage = $event"/>
     <p v-show="errorMessage" class="error">{{ errorMessage }}</p>
     <br>
-    <div class="loading" v-if="isLoading">LOADING...</div>
-    <ul v-if="books.length > 0">
-      <Book
-        v-for="book in books"
-        :key="book.id"
-        :title="book.title"
-        :by="book.by"
-        :publisher="book.publisher"
-        :imageUrl="book.imageUrl"
-        :bookUrl="book.bookUrl"
-      />
-    </ul>
-    <p v-else class="status">{{ statusMessage }}</p>
+    <Spinner v-if="isLoading"/>
+    <BookList :books="books" />
+    <p v-show="statusMessage" class="status">{{ statusMessage }}</p>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 
-import Book from "./components/Book";
+import BookList from "./components/BookList";
+import SearchBar from "./components/SearchBar";
+import Spinner from "./components/Spinner";
 
 export default {
   name: "App",
   data() {
     return {
-      searchTerm: "",
-      books: [],
+      currentQuery: "",
       totalNumberOfBooks: 0,
       isLoading: false,
       statusMessage: "",
       errorMessage: ""
     };
   },
-  computed: {
-    query: function() {
-      return this.searchTerm.split(" ").join("+");
-    }
-  },
   components: {
-    Book
-  },
-  mounted() {
-    this.scroll();
+    BookList,
+    SearchBar,
+    Spinner
   },
   methods: {
-    // Case: loading time takes too long
-    resetQuery() {
-      this.books = [];
-      this.statusMessage = "";
-      this.errorMessage = "";
-      this.paginationIndex = 0;
-    },
-    onSubmit() {
-      this.resetQuery();
+    onSearch(query) {
+      this.currentQuery = this.formatQuery(query);
 
-      if (!this.searchTerm || !this.searchTerm.replace(/\s/g, "").length) {
-        this.errorMessage = "Enter something please...";
-        return;
-      }
+      // Clear state from previous requests
+      this.resetSearchState();
 
       this.getBooks();
     },
-    getBooks() {
+    formatQuery(q) {
+      return q.split(" ").join("+");
+    },
+    resetSearchState() {
+      this.books = [];
+      this.statusMessage = "";
+      this.errorMessage = "";
+      this.startIndex = 0;
+    },
+    async getBooks() {
+      try {
+        const res = await this.sendRequest(this.currentQuery, this.startIndex);
+        this.processData(res.data);
+      } catch (err) {
+        this.errorMessage = err;
+        return;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    sendRequest(query, startIndex) {
       this.isLoading = true;
 
-      axios
-        .get(
-          `https://www.googleapis.com/books/v1/volumes?q=${
-            this.query
-          }&startIndex=${this.paginationIndex}&maxResults=40`
-        )
-        .then(res => {
-          if (!res.data.items) {
-            this.statusMessage = "No books found";
-            return;
-          }
+      return axios({
+        method: "GET",
+        url: `https://www.googleapis.com/books/v1/volumes?q=${query}&startIndex=${startIndex}`,
+        timeout: 7500, // Reject promise if > 7.5 seconds
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+    },
+    processData(data) {
+      if (data.totalItems === 0) {
+        this.statusMessage = "No books found :/";
+        return;
+      }
+      const books = this.getBooksFromData(data.items);
 
-          const booksData = res.data.items;
-          const books = booksData.map(bookData => {
-            const id = bookData.id;
-            const volume = bookData.volumeInfo;
+      this.books = books;
+      this.totalNumberOfBooks = data.totalItems;
+    },
+    getBooksFromData(booksData) {
+      return booksData.map(bookData => {
+        const id = bookData.id;
+        const volume = bookData.volumeInfo;
 
-            const title = volume.title;
-            const publisher = volume.publisher || "Unknown Publisher";
-            const bookUrl = volume.infoLink;
+        const title = volume.title;
+        const publisher = volume.publisher || "Unknown Publisher";
+        const bookUrl = volume.infoLink;
 
-            let imageUrl;
-            if (volume.imageLinks && volume.imageLinks.thumbnail) {
-              imageUrl = volume.imageLinks.thumbnail;
-            } else {
-              imageUrl =
-                "https://b.kisscc0.com/20180817/zzq/kisscc0-empty-book-intentionally-blank-page-book-cover-col-blank-book-5b76dcc0d16560.5728512315345164168577.png";
-            }
+        let imageUrl;
+        if (volume.imageLinks && volume.imageLinks.thumbnail) {
+          imageUrl = volume.imageLinks.thumbnail;
+        }
 
-            let by;
-            if (!volume.authors) {
-              by = "Unknown";
-            } else if (volume.authors.length > 1) {
-              by = volume.authors[0];
-            } else {
-              by = volume.authors.join(", ");
-            }
+        let by;
+        if (!volume.authors) {
+          by = "Unknown";
+        } else if (volume.authors.length > 1) {
+          by = volume.authors[0];
+        } else {
+          by = volume.authors.join(", ");
+        }
 
-            return { id, title, by, publisher, imageUrl, bookUrl };
-          });
-
-          this.totalNumberOfBooks = res.data.totalItems;
-          this.books = books;
-        })
-        .then(() => {
-          this.isLoading = false;
-        })
-        .catch(err => console.log(err));
+        return { id, title, by, publisher, imageUrl, bookUrl };
+      });
     }
   }
 };
@@ -135,26 +121,11 @@ export default {
   width: 80%;
 }
 
-.loading { }
-
-.input-container {
-  display: inline-block;
-  position: relative;
-}
-
-.clear {
-  cursor: pointer;
-  position: absolute;
-  top: 0;
-  right: 0.5rem;
-  transition: all 0.2s ease-in;
-}
-
 .status {
-  color: green;
+  color: $color-green;
 }
 
 .error {
-  color: red;
+  color: $color-red;
 }
 </style>
